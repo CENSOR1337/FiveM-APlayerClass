@@ -3,7 +3,8 @@ APlayerPool = {}
 APlayerPool.__index = APlayerPool
 
 function APlayerPool.newPool(options)
-    local self = setmetatable({}, APlayerPool)
+    local poolClass = (options.poolClass and type(options.poolClass) == "table") and options.poolClass or APlayerPool
+    local self = setmetatable({}, poolClass)
     self.players = {}
     self.playerClass = (options.playerClass and type(options.playerClass) == "table") and options.playerClass or APlayer
     self.bTick = (options.bTick ~= nil) and options.bTick or false
@@ -39,42 +40,41 @@ function APlayerPool.newPool(options)
     end
 
     self.baseEvents = {
-        onPlayerJoining = RegisterNetEvent("onPlayerJoining", AddPlayerIntoPool),
-        onPlayerDropped = RegisterNetEvent("onPlayerDropped", RemovePlayerFromPool)
+        onPlayerJoining = AddEventHandler("APlayer:onPlayerJoined", AddPlayerIntoPool),
+        onPlayerDropped = AddEventHandler("APlayer:onPlayerDropped", RemovePlayerFromPool)
     }
 
-    CreateThread(function() -- This will let resource assign event
-        -- Constructor
-        if (self.onConstruction) then
-            self:onConstruction()
-        end
+    -- Constructor
+    if (self.onConstruction) then
+        self:onConstruction()
+    end
 
-        -- When create new pool
-        CreateThread(function()
-            local players = GetActivePlayers()
-            for i = 1, #players, 1 do
-                local playerId = players[i]
-                local src = GetPlayerServerId(playerId)
-                AddPlayerIntoPool(src)
-            end
-        end)
-
-        -- Start EventTick
-        if (self.bTick) then
-            CreateThread(function()
-                local bSleep = false
-                while not (self.bDestroyed) do
-                    for _, aplayer in pairs(self.players) do
-                        if (aplayer.onTick) then
-                            bSleep = false
-                            aplayer:onTick()
-                        end
-                    end
-                    Wait(bSleep and 200 or self.tickRate)
-                end
-            end)
+    -- When create new pool
+    CreateThread(function()
+        local players = GetActivePlayers()
+        for i = 1, #players, 1 do
+            local playerId = players[i]
+            local src = GetPlayerServerId(playerId)
+            AddPlayerIntoPool(src)
         end
     end)
+
+    -- Start EventTick
+    if (self.bTick) then
+        CreateThread(function()
+            local bSleep = false
+            while not (self.bDestroyed) do
+                for _, aplayer in pairs(self.players) do
+                    if (aplayer.onTick) then
+                        bSleep = false
+                        aplayer:onTick()
+                    end
+                end
+                Wait(bSleep and 200 or self.tickRate)
+            end
+        end)
+    end
+    
     return self
 end
 

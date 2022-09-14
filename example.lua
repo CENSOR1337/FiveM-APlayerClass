@@ -44,6 +44,22 @@ function PlayerClass:destroy()
     print("Pool destroyed, Removing ", self.src)
 end
 
+local APlayerPoolInherit = {}
+APlayerPoolInherit.__index = APlayerPoolInherit
+setmetatable(APlayerPoolInherit, APlayerPool) -- inheritance from APlayerPool class
+
+function APlayerPoolInherit:onConstruction()
+    print("Pool Construction")
+end
+
+function APlayerPoolInherit:onPlayerLoaded(src)
+    print("Player loaded : ", src)
+end
+
+function APlayerPoolInherit:onPlayerDropped(src)
+    print("Player dropped : ", src)
+end
+
 --[[ Create Pool ]]
 CreateThread(function()
     while PlayerPedId() == 770 do
@@ -51,23 +67,12 @@ CreateThread(function()
     end
 
     local PlayersPool = APlayerPool.newPool({
+        poolClass = APlayerPoolInherit,
         playerClass = PlayerClass,
         tickRate = 4,
         bTick = true
     })
 
-    function PlayersPool:onConstruction()
-        print("Pool Construction")
-    end
-
-    function PlayersPool:onPlayerLoaded(src)
-        print("Player loaded : ", src)
-    end
-
-    function PlayersPool:onPlayerDropped(src)
-        print("Player dropped : ", src)
-    end
-
-    Wait(5000) -- Destory after 5 second
-    PlayersPool:destroy()
+    --Wait(5000) -- Destory after 5 second
+    --PlayersPool:destroy()
 end)
