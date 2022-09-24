@@ -32,10 +32,10 @@ function APlayerPool.newPool(options)
     local function RemovePlayerFromPool(src, name, netId)
         src = tonumber(src)
         if (src) then
+            if (self.onPlayerDropped) then
+                self:onPlayerDropped(src)
+            end
             self.players[src] = nil
-        end
-        if (self.onPlayerDropped) then
-            self:onPlayerDropped(src)
         end
     end
 
