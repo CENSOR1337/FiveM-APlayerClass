@@ -31,11 +31,19 @@ function APlayerPool.newPool(options)
 
     local function RemovePlayerFromPool(src, name, netId)
         src = tonumber(src)
-        if (src) then
-            if (self.onPlayerDropped) then
-                self:onPlayerDropped(src)
-            end
-            self.players[src] = nil
+        if not (src) then return end
+        
+        local aplayer = self.players[src]
+        if not (aplayer) then return end
+
+        if (aplayer.onDestroy) then
+            aplayer:onDestroy()
+        end
+
+        self.players[src] = nil
+
+        if (self.onPlayerDropped) then
+            self:onPlayerDropped(src)
         end
     end
 
@@ -83,8 +91,8 @@ function APlayerPool:destroy()
     RemoveEventHandler(self.baseEvents.onPlayerJoining)
     RemoveEventHandler(self.baseEvents.onPlayerDropped)
     for _, aplayer in pairs(self.players) do
-        if (aplayer.destroy) then
-            aplayer:destroy()
+        if (aplayer.onDestroy) then
+            aplayer:onDestroy()
         end
     end
 end
