@@ -26,7 +26,7 @@ local function DrawText3D(coords, text, size) -- Just a function to draw Text
     BeginTextCommandDisplayText("STRING")
     SetTextCentre(true)
     AddTextComponentSubstringPlayerName(text)
-    SetDrawOrigin(vector.xyz, 0)
+    SetDrawOrigin(vector.x, vector.y, vector.z, 0)
     EndTextCommandDisplayText(0.0, 0.0)
     ClearDrawOrigin()
 end
@@ -40,7 +40,7 @@ function PlayerClass:onConstruction()
     print(self.source, self.playerid, self.ped)
 end
 
-function PlayerClass:destroy()
+function PlayerClass:onDestroy()
     print("Pool destroyed, Removing ", self.src)
 end
 
