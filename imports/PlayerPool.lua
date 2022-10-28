@@ -1,3 +1,8 @@
+local DoesEntityExist = DoesEntityExist
+local GetPlayerPed = GetPlayerPed
+local GetEntityCoords = GetEntityCoords
+local GetVehiclePedIsIn = GetVehiclePedIsIn
+
 --[[ APlayerPool ]]
 APlayerPool = {}
 APlayerPool.__index = APlayerPool
@@ -27,12 +32,10 @@ function APlayerPool.newPool(options)
         end
     end
 
-    --[[ End of Private functions ]]
-
     local function RemovePlayerFromPool(src, name, netId)
         src = tonumber(src)
         if not (src) then return end
-        
+
         local aplayer = self.players[src]
         if not (aplayer) then return end
 
@@ -46,10 +49,11 @@ function APlayerPool.newPool(options)
             self:onPlayerDropped(src)
         end
     end
+    --[[ End of Private functions ]]
 
     self.baseEvents = {
-        onPlayerJoining = AddEventHandler("APlayer:onPlayerJoined", AddPlayerIntoPool),
-        onPlayerDropped = AddEventHandler("APlayer:onPlayerDropped", RemovePlayerFromPool)
+        onPlayerJoining = AddEventHandler("onPlayerJoining", AddPlayerIntoPool),
+        onPlayerDropped = AddEventHandler("onPlayerDropped", RemovePlayerFromPool)
     }
 
     -- Constructor
@@ -73,7 +77,7 @@ function APlayerPool.newPool(options)
             local bSleep = false
             while not (self.bDestroyed) do
                 for _, aplayer in pairs(self.players) do
-                    if (aplayer.onTick) then
+                    if (aplayer.onTick and DoesEntityExist(aplayer.ped)) then
                         bSleep = false
                         aplayer:onTick()
                     end
@@ -82,7 +86,20 @@ function APlayerPool.newPool(options)
             end
         end)
     end
-    
+
+    -- Update player ped
+    CreateThread(function()
+        while not (self.bDestroyed) do
+            for _, aplayer in pairs(self.players) do
+                aplayer.ped = GetPlayerPed(aplayer.playerid)
+                aplayer.coords = GetEntityCoords(aplayer.ped)
+                aplayer.vehicle = GetVehiclePedIsIn(aplayer.ped, false)
+                aplayer.vehicle = DoesEntityExist(aplayer.vehicle) and aplayer.vehicle or false
+            end
+            Wait(250)
+        end
+    end)
+
     return self
 end
 

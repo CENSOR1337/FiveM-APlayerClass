@@ -16,3 +16,7 @@ client_scripts {
     "imports/APlayer.lua",
     "example.lua"
 }
+
+files {
+    "imports/*.lua"
+}

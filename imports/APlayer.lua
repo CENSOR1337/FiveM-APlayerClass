@@ -8,7 +8,6 @@ function APlayer.new(src, playerClass)
     self.src = src
     self.source = self.src
     self.playerid = GetPlayerFromServerId(self.src)
-    self.ped = GetPlayerPed(self.playerid)
 
     if (self.onConstruction) then
         self:onConstruction()
